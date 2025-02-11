@@ -1,0 +1,15 @@
+[package]
+name = "quick_xml_nif"
+version = "0.1.0"
+authors = []
+edition = "2021"
+
+[lib]
+name = "quick_xml_nif"
+crate-type = ["cdylib"]
+
+[dependencies]
+rustler = "0.36"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+quick-xml = { version = "0.37", features = ["serialize"] }
