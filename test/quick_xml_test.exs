@@ -7,30 +7,36 @@ defmodule QuickXmlFullTest do
       <title>Sample XML</title>
       <version>1.0</version>
       <metadata>
-          <author>John Doe</author>
-          <date>2024-02-07</date>
+        <author>John Doe</author>
+        <date>2024-02-07</date>
       </metadata>
       <item id="1" type="product">
-          <name>Item 1</name>
-          <value>10</value>
-          <in_stock>true</in_stock>
+        <name>Item 1</name>
+        <value>10</value>
+        <in_stock>true</in_stock>
       </item>
       <description>This is a <strong>bold</strong> statement.</description>
       <image src="https://example.com/image.jpg" />
       <items>
-          <item id="2" type="product">
-              <name>Item 2</name>
-              <value>20.5</value>
-          </item>
-          <item id="3" type="service">
-              <name>Service 1</name>
-              <price currency="USD">99.99</price>
-          </item>
+        <item id="2" type="product">
+          <name>Item 2</name>
+          <value>20.5</value>
+        </item>
+        <item id="3" type="service">
+          <name>Service 1</name>
+          <price currency="USD">99.99</price>
+        </item>
       </items>
+      <order>
+        #123456
+        <payment>
+          Paid
+        </payment>
+      </order>
       <script><![CDATA[
-          console.log("Hello, World!");
+        console.log("Hello, World!");
       ]]></script>
-  </root>
+    </root>
   """
 
   @expected_parsed_xml %{
@@ -52,7 +58,8 @@ defmodule QuickXmlFullTest do
       }
     },
     "metadata" => %{"author" => %{"$text" => "John Doe"}, "date" => %{"$text" => "2024-02-07"}},
-    "script" => %{"$text" => "\n        console.log(\"Hello, World!\");\n    "},
+    "order" => %{"$text" => "#123456", "payment" => %{"$text" => "Paid"}},
+    "script" => %{"$text" => "\n      console.log(\"Hello, World!\");\n    "},
     "title" => %{"$text" => "Sample XML"},
     "version" => %{"$text" => "1.0"}
   }
@@ -77,7 +84,33 @@ defmodule QuickXmlFullTest do
     end
 
     test "returns error if XML is empty" do
-      assert {:error, {:unexpected_eof, nil}} = QuickXml.parse("")
+      assert {:error, {:unexpected_eof, "no details"}} = QuickXml.parse("")
+    end
+  end
+
+  describe "parse!/1" do
+    test "parses valid XML and returns a map" do
+      assert QuickXml.parse!(@xml_content) == @expected_parsed_xml
+    end
+
+    test "raises an error for invalid XML" do
+      assert_raise RuntimeError, ~r/invalid_xml: syntax error: xml must have a node/, fn ->
+        QuickXml.parse!("invalid xml")
+      end
+    end
+
+    test "raises an error for malformed XML" do
+      malformed_xml = "<root><title>Unclosed"
+
+      assert_raise RuntimeError, ~r/malformed_xml: ill-formed document/, fn ->
+        QuickXml.parse!(malformed_xml)
+      end
+    end
+
+    test "raises an error for empty XML" do
+      assert_raise RuntimeError, ~r/unexpected_eof: no details/, fn ->
+        QuickXml.parse!("")
+      end
     end
   end
 end

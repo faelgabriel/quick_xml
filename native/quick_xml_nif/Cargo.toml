@@ -6,10 +6,11 @@ edition = "2021"
 
 [lib]
 name = "quick_xml_nif"
+path = "src/lib.rs"
 crate-type = ["cdylib"]
 
 [dependencies]
-rustler = "0.36"
+rustler = "0.35"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 quick-xml = { version = "0.37", features = ["serialize"] }
